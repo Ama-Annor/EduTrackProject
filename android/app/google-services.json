@@ -1,0 +1,76 @@
+{
+  "project_info": {
+    "project_number": "688118703124",
+    "project_id": "edutrack-2e971",
+    "storage_bucket": "edutrack-2e971.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:688118703124:android:10d510d6d21d6fb7463301",
+        "android_client_info": {
+          "package_name": "com.example.edu_track"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "688118703124-9un3f4brko8rrl032cu2ggijhhtflsmb.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.edu_track",
+            "certificate_hash": "869a994f9284f73ce043c31a27b731fd3f068767"
+          }
+        },
+        {
+          "client_id": "688118703124-uv1omn2j156e5h0oj4pi0845ut3sg160.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDUXJl9-NUp7nuW0S4iWWaOw5rmYmgZZnY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "688118703124-uv1omn2j156e5h0oj4pi0845ut3sg160.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:688118703124:android:438d8b8acf1f1cf6463301",
+        "android_client_info": {
+          "package_name": "com.example.edu_track_project"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "688118703124-uv1omn2j156e5h0oj4pi0845ut3sg160.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDUXJl9-NUp7nuW0S4iWWaOw5rmYmgZZnY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "688118703124-uv1omn2j156e5h0oj4pi0845ut3sg160.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
