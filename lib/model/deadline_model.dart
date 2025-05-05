@@ -1,4 +1,3 @@
-// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:convert';
 
 class Deadline {
@@ -9,6 +8,7 @@ class Deadline {
   final String dueDate;
   final String setReminder;
   final String reminderTime;
+
   Deadline({
     required this.userID,
     required this.deadline_id,
@@ -65,7 +65,8 @@ class Deadline {
 
   String toJson() => json.encode(toMap());
 
-  factory Deadline.fromJson(String source) => Deadline.fromMap(json.decode(source) as Map<String, dynamic>);
+  factory Deadline.fromJson(String source) =>
+      Deadline.fromMap(json.decode(source) as Map<String, dynamic>);
 
   @override
   String toString() {

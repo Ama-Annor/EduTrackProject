@@ -20,6 +20,10 @@ class _SignUpPageState extends State<SignUpPage> {
   TextEditingController();
   final TextEditingController _usernameController = TextEditingController();
 
+  // Add these to control password visibility
+  bool _obscurePassword = true;
+  bool _obscureConfirmPassword = true;
+
   String? _emailError;
   String? _passwordError;
   String? _passwordConfirmError;
@@ -262,27 +266,75 @@ class _SignUpPageState extends State<SignUpPage> {
                 maxLenOfInput: 50,
               ),
               const SizedBox(height: 25),
-              CustomTextField(
-                controller: _passwordController,
-                labelText: 'Password',
-                hintText: 'Password must be at least 8 characters long',
-                errorText: _passwordError,
-                obscureText: true,
-                keyboardType: TextInputType.visiblePassword,
-                focusNode: _passwordFocusNode,
-                maxLenOfInput: 20,
+
+              // Modified password field with toggle button
+              Stack(
+                alignment: Alignment.centerRight,
+                children: [
+                  CustomTextField(
+                    controller: _passwordController,
+                    labelText: 'Password',
+                    hintText: 'Password must be at least 8 characters long',
+                    errorText: _passwordError,
+                    obscureText: _obscurePassword, // Use the state variable
+                    keyboardType: TextInputType.visiblePassword,
+                    focusNode: _passwordFocusNode,
+                    maxLenOfInput: 20,
+                  ),
+                  Positioned(
+                    right: 10,
+                    child: IconButton(
+                      icon: Icon(
+                        _obscurePassword
+                            ? Icons.visibility_off
+                            : Icons.visibility,
+                        color: Colors.grey,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _obscurePassword = !_obscurePassword;
+                        });
+                      },
+                    ),
+                  ),
+                ],
               ),
+
               const SizedBox(height: 25),
-              CustomTextField(
-                controller: _confirmPasswordController,
-                labelText: 'Confirm password',
-                hintText: 'Re-enter password',
-                errorText: _passwordConfirmError,
-                obscureText: true,
-                keyboardType: TextInputType.visiblePassword,
-                focusNode: _confirmPasswordFocusNode,
-                maxLenOfInput: 20,
+
+              // Modified confirm password field with toggle button
+              Stack(
+                alignment: Alignment.centerRight,
+                children: [
+                  CustomTextField(
+                    controller: _confirmPasswordController,
+                    labelText: 'Confirm password',
+                    hintText: 'Re-enter password',
+                    errorText: _passwordConfirmError,
+                    obscureText: _obscureConfirmPassword, // Use the state variable
+                    keyboardType: TextInputType.visiblePassword,
+                    focusNode: _confirmPasswordFocusNode,
+                    maxLenOfInput: 20,
+                  ),
+                  Positioned(
+                    right: 10,
+                    child: IconButton(
+                      icon: Icon(
+                        _obscureConfirmPassword
+                            ? Icons.visibility_off
+                            : Icons.visibility,
+                        color: Colors.grey,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _obscureConfirmPassword = !_obscureConfirmPassword;
+                        });
+                      },
+                    ),
+                  ),
+                ],
               ),
+
               const SizedBox(height: 70),
               CustomNormButton(
                 text: 'Sign Up',

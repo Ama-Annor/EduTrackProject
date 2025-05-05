@@ -1,1 +1,55 @@
-{"flutter":{"platforms":{"android":{"default":{"projectId":"edutrack-2e971","appId":"1:688118703124:android:438d8b8acf1f1cf6463301","fileOutput":"android/app/google-services.json"}},"ios":{"default":{"projectId":"edutrack-2e971","appId":"1:688118703124:ios:befef59ea1799626463301","uploadDebugSymbols":false,"fileOutput":"ios/Runner/GoogleService-Info.plist"}},"macos":{"default":{"projectId":"edutrack-2e971","appId":"1:688118703124:ios:befef59ea1799626463301","uploadDebugSymbols":false,"fileOutput":"macos/Runner/GoogleService-Info.plist"}},"dart":{"lib/firebase_options.dart":{"projectId":"edutrack-2e971","configurations":{"android":"1:688118703124:android:438d8b8acf1f1cf6463301","ios":"1:688118703124:ios:befef59ea1799626463301","macos":"1:688118703124:ios:befef59ea1799626463301","web":"1:688118703124:web:514c061e01c35381463301","windows":"1:688118703124:web:34348c8190680a5a463301"}}}}}}
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "edutrack-2e971",
+          "appId": "1:688118703124:android:438d8b8acf1f1cf6463301",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "ios": {
+        "default": {
+          "projectId": "edutrack-2e971",
+          "appId": "1:688118703124:ios:befef59ea1799626463301",
+          "uploadDebugSymbols": false,
+          "fileOutput": "ios/Runner/GoogleService-Info.plist"
+        }
+      },
+      "macos": {
+        "default": {
+          "projectId": "edutrack-2e971",
+          "appId": "1:688118703124:ios:befef59ea1799626463301",
+          "uploadDebugSymbols": false,
+          "fileOutput": "macos/Runner/GoogleService-Info.plist"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "edutrack-2e971",
+          "configurations": {
+            "android": "1:688118703124:android:438d8b8acf1f1cf6463301",
+            "ios": "1:688118703124:ios:befef59ea1799626463301",
+            "macos": "1:688118703124:ios:befef59ea1799626463301",
+            "web": "1:688118703124:web:514c061e01c35381463301",
+            "windows": "1:688118703124:web:34348c8190680a5a463301"
+          }
+        }
+      }
+    }
+  },
+  "functions": [
+    {
+      "source": "functions",
+      "codebase": "default",
+      "ignore": [
+        "node_modules",
+        ".git",
+        "firebase-debug.log",
+        "firebase-debug.*.log",
+        "*.local"
+      ],
+      "predeploy": []
+    }
+  ]
+}

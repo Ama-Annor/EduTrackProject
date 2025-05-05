@@ -2,12 +2,15 @@ import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:edu_track_project/controller/deadline_controller.dart';
 import 'package:edu_track_project/model/deadline_model.dart';
+import 'package:edu_track_project/screens/widgets/deadline_modal.dart';
 import 'package:edu_track_project/screens/sub-pages/settings.dart';
 import 'package:edu_track_project/screens/widgets/deadline_card.dart';
 import 'package:edu_track_project/screens/widgets/stats_card.dart';
 import 'package:http/http.dart' as http;
+import 'package:edu_track_project/main.dart' show flutterLocalNotificationsPlugin;
 
 class DashboardPage extends StatefulWidget {
   final String email;
@@ -27,23 +30,14 @@ class _DashboardPageState extends State<DashboardPage> {
     super.initState();
     _deadlines = _fetchData();
     _advice = fetchAdvice();
-    //triggerNotification();
+
+    // Check for upcoming deadlines when dashboard loads
+    checkUpcomingDeadlines();
   }
 
   Future<List<Deadline>> _fetchData() async {
     return await _deadlineController.getAllDeadlines(widget.email);
   }
-
-  // Future<void> triggerNotification() async {
-  //   const url = 'https://us-central1-studymaster-34e00.cloudfunctions.net/send_motivational_quote';
-  //   final response = await http.post(Uri.parse(url));
-
-  //   if (response.statusCode == 200) {
-  //     print('Notification sent successfully!');
-  //   } else {
-  //     print('Failed to send notification.');
-  //   }
-  // }
 
   Future<String> fetchAdvice() async {
     final response = await http.get(Uri.parse('https://api.adviceslip.com/advice'));
@@ -61,6 +55,69 @@ class _DashboardPageState extends State<DashboardPage> {
       _deadlines = _fetchData();
       _advice = fetchAdvice();
     });
+
+    // Check for upcoming deadlines on refresh
+    checkUpcomingDeadlines();
+  }
+
+  // Method to check for upcoming deadlines and show notifications
+  Future<void> checkUpcomingDeadlines() async {
+    final now = DateTime.now();
+    final tomorrow = DateTime(now.year, now.month, now.day + 1);
+
+    try {
+      // Get deadlines due tomorrow
+      final deadlines = await _deadlineController.getAllDeadlines(widget.email);
+      final tomorrowDeadlines = deadlines.where((deadline) {
+        // Parse the due date
+        final dueDate = DateTime.parse(deadline.dueDate);
+
+        // Check if it's due tomorrow
+        return dueDate.year == tomorrow.year &&
+            dueDate.month == tomorrow.month &&
+            dueDate.day == tomorrow.day;
+      }).toList();
+
+      // Show notification if there are deadlines due tomorrow
+      if (tomorrowDeadlines.isNotEmpty) {
+        // Android notification details
+        const AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
+          'deadline_reminders_channel',
+          'Deadline Reminders',
+          channelDescription: 'Reminders for upcoming deadlines',
+          importance: Importance.max,
+          priority: Priority.high,
+        );
+
+        // iOS notification details
+        const DarwinNotificationDetails iosDetails = DarwinNotificationDetails(
+          presentAlert: true,
+          presentBadge: true,
+          presentSound: true,
+        );
+
+        // Platform-specific notification details
+        const NotificationDetails platformDetails = NotificationDetails(
+          android: androidDetails,
+          iOS: iosDetails,
+        );
+
+        // Create different messages based on number of deadlines
+        final message = tomorrowDeadlines.length == 1
+            ? '${tomorrowDeadlines[0].title} is due tomorrow!'
+            : 'You have ${tomorrowDeadlines.length} deadlines due tomorrow!';
+
+        // Show the notification
+        await flutterLocalNotificationsPlugin.show(
+          2, // Different ID from other notifications
+          'Deadline Reminder',
+          message,
+          platformDetails,
+        );
+      }
+    } catch (e) {
+      print('Error checking upcoming deadlines: $e');
+    }
   }
 
   void _navigateToSettingsPage(BuildContext context) {
@@ -99,7 +156,7 @@ class _DashboardPageState extends State<DashboardPage> {
               ClipRRect(
                 borderRadius: BorderRadius.circular(16.0),
                 child: Image.network(
-                  'https://zenquotes.io/api/image', // Replace with your image URL
+                  'https://zenquotes.io/api/image',
                   width: double.infinity,
                   height: 140,
                   fit: BoxFit.cover,
@@ -166,6 +223,25 @@ class _DashboardPageState extends State<DashboardPage> {
     }
   }
 
+  void _showDeadlineModal(Deadline deadline) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color.fromRGBO(29, 29, 29, 1),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) {
+        return DeadlineModal(
+          task: deadline.toMap(),
+          onDeadlineChanged: _refreshData, // Pass the refresh callback
+        );
+      },
+    ).then((_) {
+      // Refresh data when modal is closed
+      _refreshData();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
@@ -176,6 +252,7 @@ class _DashboardPageState extends State<DashboardPage> {
             backgroundColor: Colors.transparent,
             centerTitle: false,
             elevation: 0,
+            automaticallyImplyLeading: false,
             title: Column(
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -204,20 +281,25 @@ class _DashboardPageState extends State<DashboardPage> {
                       children: [
                         IconButton(
                           icon: const Icon(
+                            Icons.refresh,
+                            color: Colors.white,
+                            size: 26,
+                          ),
+                          onPressed: _refreshData,
+                        ),
+                        IconButton(
+                          icon: const Icon(
                             Icons.settings,
                             color: Colors.white,
-                            size: 30,
+                            size: 26,
                           ),
                           onPressed: () => _navigateToSettingsPage(context),
-                        ),
-                        const SizedBox(
-                          width: 10,
                         ),
                         IconButton(
                           icon: const Icon(
                             Icons.notifications_none_outlined,
                             color: Colors.white,
-                            size: 30,
+                            size: 26,
                           ),
                           onPressed: _showNotificationDetails,
                         ),
@@ -248,7 +330,7 @@ class _DashboardPageState extends State<DashboardPage> {
                 unselectedLabelColor: Colors.white,
                 tabs: [
                   Tab(
-                    text: 'Today',
+                    text: 'Recently',
                   ),
                   Tab(
                     text: 'Week',
@@ -259,7 +341,8 @@ class _DashboardPageState extends State<DashboardPage> {
             onRefresh: _refreshData,
             child: SingleChildScrollView(
               child: Padding(
-                padding: const EdgeInsets.all(16.0),
+                // Add extra bottom padding to avoid overlap with navigation bar
+                padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 90.0),
                 child: Column(
                   children: [
                     SizedBox(
@@ -270,50 +353,109 @@ class _DashboardPageState extends State<DashboardPage> {
                       ]),
                     ),
                     const SizedBox(
+                      height: 20,
+                    ),
+                    const Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        'Upcoming Deadlines',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(
                       height: 10,
                     ),
                     FutureBuilder<List<Deadline>>(
                       future: _deadlines,
                       builder: (context, snapshot) {
                         if (snapshot.connectionState == ConnectionState.waiting) {
-                          return const Center(child: CircularProgressIndicator());
+                          return const SizedBox(
+                            height: 150,
+                            child: Center(
+                              child: CircularProgressIndicator(
+                                color: Color(0xFF00BFA5),
+                              ),
+                            ),
+                          );
                         } else if (snapshot.hasError) {
-                          return Text('Error: ${snapshot.error}');
-                        } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                          return const Center(
+                          return SizedBox(
+                            height: 150,
+                            child: Center(
                               child: Text(
-                                '',
-                                style: TextStyle(color: Colors.white),
-                              ));
+                                'Error: ${snapshot.error}',
+                                style: const TextStyle(color: Colors.white),
+                              ),
+                            ),
+                          );
+                        } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                          return SizedBox(
+                            height: 150,
+                            child: Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  const Icon(
+                                    Icons.event_note,
+                                    color: Color(0xFF00BFA5),
+                                    size: 48,
+                                  ),
+                                  const SizedBox(height: 12),
+                                  const Text(
+                                    'No deadlines yet',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 16,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
                         } else {
                           final deadlines = snapshot.data!;
-                          return SizedBox(
-                              height: 140,
-                              child: ListView.builder(
-                                scrollDirection: Axis.horizontal,
-                                itemCount: deadlines.length,
-                                itemBuilder: (context, index) {
-                                  return Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 8.0),
+                          // Sort deadlines by date (closest first)
+                          deadlines.sort((a, b) =>
+                              DateTime.parse(a.dueDate).compareTo(DateTime.parse(b.dueDate))
+                          );
+
+                          return ConstrainedBox(
+                            constraints: const BoxConstraints(
+                              minHeight: 140,
+                              maxHeight: 170,
+                            ),
+                            child: ListView.builder(
+                              scrollDirection: Axis.horizontal,
+                              itemCount: deadlines.length,
+                              itemBuilder: (context, index) {
+                                final deadline = deadlines[index];
+                                return Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 8.0),
+                                  child: GestureDetector(
+                                    onTap: () => _showDeadlineModal(deadline),
                                     child: SizedBox(
-                                      width: 200, // Adjust width for each card
-                                      child: DeadlineCard(
-                                          deadline: deadlines[index]),
+                                      width: 200,
+                                      child: DeadlineCard(deadline: deadline),
                                     ),
-                                  );
-                                },
-                              ));
+                                  ),
+                                );
+                              },
+                            ),
+                          );
                         }
                       },
                     ),
                     const SizedBox(
-                      height: 10,
+                      height: 20,
                     ),
                     const Align(
                       alignment: Alignment.centerLeft,
                       child: Text(
-                        '\t\tQuote of the Day',
+                        'Quote of the Day',
                         style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
@@ -324,26 +466,41 @@ class _DashboardPageState extends State<DashboardPage> {
                     ClipRRect(
                       borderRadius: BorderRadius.circular(16.0),
                       child: Image.network(
-                        'https://zenquotes.io/api/image', // Replace with your image URL
+                        'https://zenquotes.io/api/image',
                         width: 352,
-                        height: 130,
+                        height: 110, // Reduced height to avoid overlap
                         fit: BoxFit.cover,
                         errorBuilder: (context, error, stackTrace) {
-                          // Handle image loading error
                           return Container(
-                            width: 55,
-                            height: 55,
-                            color: Colors
-                                .grey[300], // Background color for error state
-                            child: Icon(
-                              Icons.error, // Default meal icon
-                              size: 30,
-                              color: Colors.grey[600],
+                            width: 352,
+                            height: 110,
+                            decoration: BoxDecoration(
+                              color: const Color.fromRGBO(38, 38, 38, 1),
+                              borderRadius: BorderRadius.circular(16.0),
+                            ),
+                            child: Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.format_quote,
+                                    size: 40,
+                                    color: Colors.grey[600],
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    'Quote not available',
+                                    style: TextStyle(color: Colors.grey[400]),
+                                  ),
+                                ],
+                              ),
                             ),
                           );
                         },
                       ),
                     ),
+                    // Add extra space at bottom to avoid overlap with navigation bar
+                    const SizedBox(height: 20),
                   ],
                 ),
               ),

@@ -8,7 +8,11 @@ class AddDeadline extends StatefulWidget {
   final BuildContext rootContext;
   final VoidCallback onDeadlineCreated;
 
-  const AddDeadline({super.key, required this.rootContext, required this.onDeadlineCreated});
+  const AddDeadline({
+    super.key,
+    required this.rootContext,
+    required this.onDeadlineCreated
+  });
 
   @override
   State<AddDeadline> createState() => _AddDeadlineState();
@@ -29,27 +33,45 @@ class _AddDeadlineState extends State<AddDeadline> {
     _user = FirebaseAuth.instance.currentUser!;
   }
 
+  @override
+  void dispose() {
+    subjectController.dispose();
+    descriptionController.dispose();
+    dateLoggedController.dispose();
+    super.dispose();
+  }
+
   Future<void> _selectDate(BuildContext context) async {
-    print('Tapped on date ListTile');
     final DateTime? picked = await showDatePicker(
       context: context,
       initialDate: _selectedDate,
-      firstDate: DateTime(2023, 1, 1),
-      lastDate: DateTime(2025, 12, 31),
+      firstDate: DateTime(2024),
+      lastDate: DateTime(2026),
+      builder: (context, child) {
+        return Theme(
+          data: ThemeData.dark().copyWith(
+            colorScheme: const ColorScheme.dark(
+              primary: Color(0xFF00BFA5),
+              onPrimary: Colors.white,
+              surface: Color.fromRGBO(38, 38, 38, 1),
+              onSurface: Colors.white,
+            ),
+            dialogBackgroundColor: const Color.fromRGBO(29, 29, 29, 1),
+          ),
+          child: child!,
+        );
+      },
     );
-    print('Picked date: $picked');
+
     if (picked != null && picked != _selectedDate) {
       setState(() {
         _selectedDate = picked;
-        print('Updated selectedDate to: $_selectedDate');
       });
-    } else {
-      print('No new date picked or same as current');
     }
   }
 
   String _formatTimeWithoutAmPm(TimeOfDay time) {
-    final hour = time.hour.toString().padLeft(1, '0');
+    final hour = time.hour.toString();
     final minute = time.minute.toString().padLeft(2, '0');
     return '${hour}h ${minute}m';
   }
@@ -59,12 +81,24 @@ class _AddDeadlineState extends State<AddDeadline> {
       context: context,
       initialTime: _loggedTime,
       builder: (BuildContext context, Widget? child) {
-        return MediaQuery(
-          data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true),
-          child: child!,
+        return Theme(
+          data: ThemeData.dark().copyWith(
+            colorScheme: const ColorScheme.dark(
+              primary: Color(0xFF00BFA5),
+              onPrimary: Colors.white,
+              surface: Color.fromRGBO(38, 38, 38, 1),
+              onSurface: Colors.white,
+            ),
+            dialogBackgroundColor: const Color.fromRGBO(29, 29, 29, 1),
+          ),
+          child: MediaQuery(
+            data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true),
+            child: child!,
+          ),
         );
       },
     );
+
     if (picked != null && picked != _loggedTime) {
       setState(() {
         _loggedTime = picked;
@@ -72,71 +106,91 @@ class _AddDeadlineState extends State<AddDeadline> {
     }
   }
 
-  void _CreateDeadline(BuildContext context) async {
+  void _createDeadline(BuildContext context) async {
+    // Perform validation
     String subject = subjectController.text.trim();
     String description = descriptionController.text.trim();
 
     if (subject.isEmpty || description.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Subject and/or description cannot be empty',
-              style: TextStyle(color: Colors.white)),
+          content: Text(
+            'Subject and description cannot be empty',
+            style: TextStyle(color: Colors.white),
+          ),
           backgroundColor: Color(0xFF00BFA5),
           behavior: SnackBarBehavior.floating,
         ),
       );
-      Navigator.pop(context);
       return;
     }
 
     if (subject.split(' ').length > 3) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Subject cannot be more than 3 words',
-              style: TextStyle(color: Colors.white)),
+          content: Text(
+            'Subject cannot be more than 3 words',
+            style: TextStyle(color: Colors.white),
+          ),
           backgroundColor: Color(0xFF00BFA5),
           behavior: SnackBarBehavior.floating,
         ),
       );
-      Navigator.pop(context);
       return;
     }
+
+    // If validation passes, proceed to create deadline
+    final String userEmail = _user.email ?? '';
+    print('Creating deadline for user: $userEmail');
 
     final deadlineDetails = {
       'title': subject,
       'description': description,
       'dueDate': _selectedDate.toLocal().toString().split(' ')[0],
-      'userID': _user.email,
+      'userID': userEmail,
       'setReminder': 'false',
       'reminderTime': _formatTimeWithoutAmPm(_loggedTime),
     };
 
-    print('Saving deadline with details: $deadlineDetails');
+    print('Deadline details: $deadlineDetails');
 
     try {
-      await _deadlineController.createDeadline(deadlineDetails);
-      print('Deadline saved successfully');
-      ScaffoldMessenger.of(widget.rootContext).showSnackBar(
-        const SnackBar(
-          content: Text('Deadline created successfully',
-              style: TextStyle(color: Colors.white)),
-          backgroundColor: Color(0xFF00BFA5),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
-      widget.onDeadlineCreated(); // Call the callback to refresh the parent
-      Navigator.pop(context);
+      final result = await _deadlineController.createDeadline(deadlineDetails);
+      print('Create deadline result: $result');
+
+      if (result) {
+        // Show success message
+        ScaffoldMessenger.of(widget.rootContext).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Deadline created successfully',
+              style: TextStyle(color: Colors.white),
+            ),
+            backgroundColor: Color(0xFF00BFA5),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+
+        // Close the modal and refresh the list
+        Navigator.pop(context);
+
+        // Call the callback to refresh the deadline list
+        widget.onDeadlineCreated();
+      } else {
+        throw Exception('Failed to create deadline');
+      }
     } catch (e) {
-      print('Error saving deadline: $e');
+      print('Error creating deadline: $e');
       ScaffoldMessenger.of(widget.rootContext).showSnackBar(
         SnackBar(
-          content: Text('Failed to create deadline: $e',
-              style: const TextStyle(color: Colors.white)),
-          backgroundColor: Color(0xFF00BFA5),
+          content: Text(
+            'Failed to create deadline: $e',
+            style: const TextStyle(color: Colors.white),
+          ),
+          backgroundColor: const Color(0xFF00BFA5),
           behavior: SnackBarBehavior.floating,
         ),
       );
-      Navigator.pop(context);
     }
   }
 
@@ -144,7 +198,12 @@ class _AddDeadlineState extends State<AddDeadline> {
   Widget build(BuildContext context) {
     return SingleChildScrollView(
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: EdgeInsets.only(
+          top: 16.0,
+          left: 16.0,
+          right: 16.0,
+          bottom: MediaQuery.of(context).viewInsets.bottom + 16.0,
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -154,12 +213,13 @@ class _AddDeadlineState extends State<AddDeadline> {
               child: Text(
                 'Create Deadline',
                 style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF00BFA5)),
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF00BFA5),
+                ),
               ),
             ),
-            const SizedBox(height: 50),
+            const SizedBox(height: 40),
             CustomTextField(
               controller: subjectController,
               labelText: 'Subject',
@@ -208,11 +268,10 @@ class _AddDeadlineState extends State<AddDeadline> {
               alignment: Alignment.center,
               child: CustomNormButton(
                 text: 'Create Deadline',
-                onPressed: () {
-                  _CreateDeadline(context);
-                },
+                onPressed: () => _createDeadline(context),
               ),
             ),
+            const SizedBox(height: 20),
           ],
         ),
       ),

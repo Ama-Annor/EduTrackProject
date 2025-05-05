@@ -17,6 +17,7 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   bool _isLoading = false;
+  bool _obscurePassword = true; // Add this to control password visibility
 
   String? _emailError;
   String? _passwordError;
@@ -229,16 +230,40 @@ class _LoginPageState extends State<LoginPage> {
                 maxLenOfInput: 50,
               ),
               const SizedBox(height: 40),
-              CustomTextField(
-                controller: _passwordController,
-                labelText: 'Password',
-                hintText: 'Enter password',
-                errorText: _passwordError,
-                obscureText: true,
-                keyboardType: TextInputType.visiblePassword,
-                focusNode: _passwordFocusNode,
-                maxLenOfInput: 20,
+
+              // Modified password field with toggle button
+              Stack(
+                alignment: Alignment.centerRight,
+                children: [
+                  CustomTextField(
+                    controller: _passwordController,
+                    labelText: 'Password',
+                    hintText: 'Enter password',
+                    errorText: _passwordError,
+                    obscureText: _obscurePassword, // Use the state variable
+                    keyboardType: TextInputType.visiblePassword,
+                    focusNode: _passwordFocusNode,
+                    maxLenOfInput: 20,
+                  ),
+                  Positioned(
+                    right: 10,
+                    child: IconButton(
+                      icon: Icon(
+                        _obscurePassword
+                            ? Icons.visibility_off
+                            : Icons.visibility,
+                        color: Colors.grey,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _obscurePassword = !_obscurePassword;
+                        });
+                      },
+                    ),
+                  ),
+                ],
               ),
+
               const SizedBox(height: 40),
               _isLoading
                   ? const CircularProgressIndicator(

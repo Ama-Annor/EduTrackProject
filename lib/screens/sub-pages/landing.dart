@@ -17,8 +17,42 @@ class LandingPage extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.center,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Image.asset('assets/images/landing.png'),
-              const SizedBox(height: 130),
+              // App logo/branding section
+              Column(
+                children: [
+                  // Replace image with an icon
+                  Container(
+                    padding: const EdgeInsets.all(30),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF00BFA5).withOpacity(0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.school, // Education-themed icon
+                      size: 100,
+                      color: Color(0xFF00BFA5),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  const Text(
+                    'Edu Track',
+                    style: TextStyle(
+                      fontSize: 36,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF00BFA5),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  const Text(
+                    'Your education, on track',
+                    style: TextStyle(
+                      fontSize: 18,
+                      color: Colors.white70,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 100),
               CustomNormButton(
                 text: 'Log In',
                 onPressed: () {
@@ -34,7 +68,8 @@ class LandingPage extends StatelessWidget {
                   Navigator.push(context, MaterialPageRoute(builder: (context) => const SignUpPage()));
                 },
               ),
-            ],),
+            ],
+          ),
         ),
       ),
     );

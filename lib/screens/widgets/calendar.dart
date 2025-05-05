@@ -2,35 +2,28 @@ import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:intl/intl.dart';
 
-// Define the CustomCalendar widget class
 class CustomCalendar extends StatefulWidget {
   final Function(DateTime) onDateSelected;
 
-  const CustomCalendar({Key? key, required this.onDateSelected}) : super(key: key);
+  const CustomCalendar({super.key, required this.onDateSelected});
 
   @override
-  _CustomCalendarState createState() => _CustomCalendarState();
+  State<CustomCalendar> createState() => _CustomCalendarState();
 }
 
 class _CustomCalendarState extends State<CustomCalendar> {
-  final CalendarFormat _calendarFormat = CalendarFormat.week;
+  CalendarFormat _calendarFormat = CalendarFormat.week;
   DateTime _focusedDay = DateTime.now();
   DateTime? _selectedDay;
-
-  // Define firstDay and lastDay properly
-  final DateTime _firstDay = DateTime(2023, 1, 1); // Start from January 1, 2023
-  final DateTime _lastDay = DateTime(2025, 12, 31); // End at December 31, 2025
 
   @override
   void initState() {
     super.initState();
-    // Ensure focusedDay is within bounds
-    if (_focusedDay.isBefore(_firstDay)) {
-      _focusedDay = _firstDay;
-    } else if (_focusedDay.isAfter(_lastDay)) {
-      _focusedDay = _lastDay;
-    }
     _selectedDay = _focusedDay;
+    // Trigger initial date selection
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      widget.onDateSelected(_focusedDay);
+    });
   }
 
   @override
@@ -39,13 +32,6 @@ class _CustomCalendarState extends State<CustomCalendar> {
       decoration: BoxDecoration(
         color: const Color.fromRGBO(29, 29, 29, 1),
         borderRadius: BorderRadius.circular(0),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0),
-            blurRadius: 0,
-            offset: const Offset(0, 1),
-          ),
-        ],
       ),
       padding: const EdgeInsets.all(8.0),
       child: Column(
@@ -64,8 +50,8 @@ class _CustomCalendarState extends State<CustomCalendar> {
           const SizedBox(height: 13.0),
           TableCalendar(
             focusedDay: _focusedDay,
-            firstDay: _firstDay,
-            lastDay: _lastDay,
+            firstDay: DateTime.utc(2024, 1, 1),
+            lastDay: DateTime.utc(2025, 12, 31),
             calendarFormat: _calendarFormat,
             selectedDayPredicate: (day) {
               return isSameDay(_selectedDay, day);
@@ -76,6 +62,11 @@ class _CustomCalendarState extends State<CustomCalendar> {
                 _focusedDay = focusedDay;
               });
               widget.onDateSelected(selectedDay);
+            },
+            onFormatChanged: (format) {
+              setState(() {
+                _calendarFormat = format;
+              });
             },
             headerVisible: false,
             headerStyle: const HeaderStyle(
@@ -108,6 +99,7 @@ class _CustomCalendarState extends State<CustomCalendar> {
               ),
               weekendTextStyle: TextStyle(color: Colors.white),
               defaultTextStyle: TextStyle(color: Colors.white),
+              selectedTextStyle: TextStyle(color: Colors.white),
             ),
             daysOfWeekStyle: const DaysOfWeekStyle(
               weekendStyle: TextStyle(color: Colors.white),
