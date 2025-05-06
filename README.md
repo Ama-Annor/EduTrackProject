@@ -1,16 +1,20 @@
-# edu_track_project
+# EduTrack
 
-A new Flutter project.
+A comprehensive mobile application designed to help university students manage their academic lives effectively.
 
-## Getting Started
+## Features
 
-This project is a starting point for a Flutter application.
+- Schedule Management: Create and track class schedules
+- Deadline Tracking: Never miss assignment due dates
+- Study Analytics: Visualize study time distribution
+- Notes: Create multimedia study notes with text, images, and audio
+- Study Timer: Focus better with integrated study sessions
+- Motivational Content: Daily quotes and study tips
 
-A few resources to get you started if this is your first Flutter project:
+## Technology
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+Built with Flutter and Firebase, providing a responsive cross-platform experience with real-time data synchronization.
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Purpose
+
+EduTrack aims to solve common challenges students face in balancing their academic responsibilities by providing an integrated tool for time management, organization, and motivation.
