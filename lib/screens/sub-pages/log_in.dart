@@ -211,7 +211,7 @@ class _LoginPageState extends State<LoginPage> {
               const Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
-                  'Back!',
+                  'to EduTrack!',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 45,

@@ -250,262 +250,240 @@ class _DashboardPageState extends State<DashboardPage> {
           backgroundColor: const Color.fromRGBO(29, 29, 29, 1),
           appBar: AppBar(
             backgroundColor: Colors.transparent,
-            centerTitle: false,
             elevation: 0,
             automaticallyImplyLeading: false,
-            title: Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(
-                  height: 25,
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Welcome',
-                          style: TextStyle(
-                              fontSize: 26,
-                              fontWeight: FontWeight.normal,
-                              color: Colors.white),
-                        ),
-                      ],
-                    ),
-                    Row(
-                      children: [
-                        IconButton(
-                          icon: const Icon(
-                            Icons.refresh,
-                            color: Colors.white,
-                            size: 26,
-                          ),
-                          onPressed: _refreshData,
-                        ),
-                        IconButton(
-                          icon: const Icon(
-                            Icons.settings,
-                            color: Colors.white,
-                            size: 26,
-                          ),
-                          onPressed: () => _navigateToSettingsPage(context),
-                        ),
-                        IconButton(
-                          icon: const Icon(
-                            Icons.notifications_none_outlined,
-                            color: Colors.white,
-                            size: 26,
-                          ),
-                          onPressed: _showNotificationDetails,
-                        ),
-                      ],
-                    )
-                  ],
-                ),
-                const SizedBox(
-                  height: 20,
-                ),
-              ],
-            ),
-            bottom: const TabBar(
-                tabAlignment: TabAlignment.fill,
-                dividerColor: Color.fromRGBO(29, 29, 29, 1),
-                labelColor: Color(0xFF00BFA5),
-                indicatorColor: Color(0xFF00BFA5),
-                indicatorSize: TabBarIndicatorSize.label,
-                indicatorWeight: 1.0,
-                labelStyle: TextStyle(
-                  fontSize: 15.0,
+            title: const Padding(
+              padding: EdgeInsets.only(top: 16.0),
+              child: Text(
+                'Dashboard',
+                style: TextStyle(
+                  fontSize: 28,
                   fontWeight: FontWeight.bold,
+                  color: Colors.white,
                 ),
-                unselectedLabelStyle: TextStyle(
-                  fontSize: 15.0,
-                  fontWeight: FontWeight.normal,
-                ),
-                unselectedLabelColor: Colors.white,
-                tabs: [
-                  Tab(
-                    text: 'Recently',
-                  ),
-                  Tab(
-                    text: 'Week',
-                  ),
-                ]),
+              ),
+            ),
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.refresh, color: Colors.white, size: 26),
+                onPressed: _refreshData,
+              ),
+              IconButton(
+                icon: const Icon(Icons.notifications_none_outlined, color: Colors.white, size: 26),
+                onPressed: _showNotificationDetails,
+              ),
+              IconButton(
+                icon: const Icon(Icons.settings, color: Colors.white, size: 26),
+                onPressed: () => _navigateToSettingsPage(context),
+              ),
+              const SizedBox(width: 8),
+            ],
           ),
           body: RefreshIndicator(
             onRefresh: _refreshData,
             child: SingleChildScrollView(
               child: Padding(
-                // Add extra bottom padding to avoid overlap with navigation bar
-                padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 90.0),
+                padding: const EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 90.0),
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    SizedBox(
-                      height: 200,
-                      child: TabBarView(children: [
-                        StatsCard(value: 'today', email: widget.email),
-                        StatsCard(value: 'week', email: widget.email),
-                      ]),
-                    ),
-                    const SizedBox(
-                      height: 20,
-                    ),
-                    const Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        'Upcoming Deadlines',
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                    // Motivational Quote Card (Compact)
+                    Card(
+                      color: const Color.fromRGBO(38, 38, 38, 1),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        side: BorderSide(color: const Color(0xFF00BFA5).withOpacity(0.3), width: 1),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(12.0),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.format_quote, color: Color(0xFF00BFA5), size: 32),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: FutureBuilder<String>(
+                                future: _advice,
+                                builder: (context, snapshot) {
+                                  if (snapshot.connectionState == ConnectionState.waiting) {
+                                    return const Text("Loading today's inspiration...",
+                                        style: TextStyle(color: Colors.white, fontStyle: FontStyle.italic));
+                                  }
+                                  return Text(
+                                    snapshot.data ?? "Focus on progress, not perfection.",
+                                    style: const TextStyle(color: Colors.white, fontSize: 14),
+                                  );
+                                },
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ),
-                    const SizedBox(
-                      height: 10,
-                    ),
-                    FutureBuilder<List<Deadline>>(
-                      future: _deadlines,
-                      builder: (context, snapshot) {
-                        if (snapshot.connectionState == ConnectionState.waiting) {
-                          return const SizedBox(
-                            height: 150,
-                            child: Center(
-                              child: CircularProgressIndicator(
-                                color: Color(0xFF00BFA5),
-                              ),
-                            ),
-                          );
-                        } else if (snapshot.hasError) {
-                          return SizedBox(
-                            height: 150,
-                            child: Center(
-                              child: Text(
-                                'Error: ${snapshot.error}',
-                                style: const TextStyle(color: Colors.white),
-                              ),
-                            ),
-                          );
-                        } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                          return SizedBox(
-                            height: 150,
-                            child: Center(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  const Icon(
-                                    Icons.event_note,
-                                    color: Color(0xFF00BFA5),
-                                    size: 48,
-                                  ),
-                                  const SizedBox(height: 12),
-                                  const Text(
-                                    'No deadlines yet',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 16,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          );
-                        } else {
-                          final deadlines = snapshot.data!;
-                          // Sort deadlines by date (closest first)
-                          deadlines.sort((a, b) =>
-                              DateTime.parse(a.dueDate).compareTo(DateTime.parse(b.dueDate))
-                          );
 
-                          return ConstrainedBox(
-                            constraints: const BoxConstraints(
-                              minHeight: 140,
-                              maxHeight: 170,
+                    const SizedBox(height: 20),
+
+                    // Stats Card (with tabs)
+                    Card(
+                      color: const Color.fromRGBO(38, 38, 38, 1),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Padding(
+                            padding: EdgeInsets.all(16.0),
+                            child: Text(
+                              'Study Analytics',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
                             ),
-                            child: ListView.builder(
-                              scrollDirection: Axis.horizontal,
-                              itemCount: deadlines.length,
-                              itemBuilder: (context, index) {
-                                final deadline = deadlines[index];
-                                return Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 8.0),
-                                  child: GestureDetector(
-                                    onTap: () => _showDeadlineModal(deadline),
-                                    child: SizedBox(
-                                      width: 200,
-                                      child: DeadlineCard(deadline: deadline),
-                                    ),
+                          ),
+                          SizedBox(
+                            height: 200,
+                            child: TabBarView(children: [
+                              StatsCard(value: 'today', email: widget.email),
+                              StatsCard(value: 'week', email: widget.email),
+                            ]),
+                          ),
+                          const TabBar(
+                            tabAlignment: TabAlignment.fill,
+                            dividerColor: Color.fromRGBO(29, 29, 29, 1),
+                            labelColor: Color(0xFF00BFA5),
+                            indicatorColor: Color(0xFF00BFA5),
+                            indicatorSize: TabBarIndicatorSize.label,
+                            indicatorWeight: 1.0,
+                            labelStyle: TextStyle(
+                              fontSize: 15.0,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            unselectedLabelStyle: TextStyle(
+                              fontSize: 15.0,
+                              fontWeight: FontWeight.normal,
+                            ),
+                            unselectedLabelColor: Colors.white,
+                            tabs: [
+                              Tab(text: 'Today'),
+                              Tab(text: 'This Week'),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Deadlines Section (Expanded)
+                    Card(
+                      color: const Color.fromRGBO(38, 38, 38, 1),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                const Text(
+                                  'Upcoming Deadlines',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
                                   ),
-                                );
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 10),
+                            FutureBuilder<List<Deadline>>(
+                              future: _deadlines,
+                              builder: (context, snapshot) {
+                                if (snapshot.connectionState == ConnectionState.waiting) {
+                                  return const SizedBox(
+                                    height: 150,
+                                    child: Center(
+                                      child: CircularProgressIndicator(color: Color(0xFF00BFA5)),
+                                    ),
+                                  );
+                                } else if (snapshot.hasError) {
+                                  return SizedBox(
+                                    height: 150,
+                                    child: Center(
+                                      child: Text(
+                                        'Error: ${snapshot.error}',
+                                        style: const TextStyle(color: Colors.white),
+                                      ),
+                                    ),
+                                  );
+                                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                                  return SizedBox(
+                                    height: 150,
+                                    child: Center(
+                                      child: Column(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          const Icon(
+                                            Icons.event_note,
+                                            color: Color(0xFF00BFA5),
+                                            size: 48,
+                                          ),
+                                          const SizedBox(height: 12),
+                                          const Text(
+                                            'No deadlines yet',
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 16,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                } else {
+                                  final deadlines = snapshot.data!;
+                                  // Sort deadlines by date (closest first)
+                                  deadlines.sort((a, b) =>
+                                      DateTime.parse(a.dueDate).compareTo(DateTime.parse(b.dueDate))
+                                  );
+
+                                  return ConstrainedBox(
+                                    constraints: const BoxConstraints(
+                                      minHeight: 140,
+                                      maxHeight: 170,
+                                    ),
+                                    child: ListView.builder(
+                                      scrollDirection: Axis.horizontal,
+                                      itemCount: deadlines.length,
+                                      itemBuilder: (context, index) {
+                                        final deadline = deadlines[index];
+                                        return Padding(
+                                          padding: const EdgeInsets.only(right: 12.0),
+                                          child: GestureDetector(
+                                            onTap: () => _showDeadlineModal(deadline),
+                                            child: SizedBox(
+                                              width: 200,
+                                              child: DeadlineCard(deadline: deadline),
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                  );
+                                }
                               },
                             ),
-                          );
-                        }
-                      },
-                    ),
-                    const SizedBox(
-                      height: 20,
-                    ),
-                    const Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        'Quote of the Day',
-                        style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white),
+                          ],
+                        ),
                       ),
                     ),
-                    const SizedBox(height: 12),
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(16.0),
-                      child: Image.network(
-                        'https://zenquotes.io/api/image',
-                        width: 352,
-                        height: 110, // Reduced height to avoid overlap
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
-                          return Container(
-                            width: 352,
-                            height: 110,
-                            decoration: BoxDecoration(
-                              color: const Color.fromRGBO(38, 38, 38, 1),
-                              borderRadius: BorderRadius.circular(16.0),
-                            ),
-                            child: Center(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    Icons.format_quote,
-                                    size: 40,
-                                    color: Colors.grey[600],
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    'Quote not available',
-                                    style: TextStyle(color: Colors.grey[400]),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                    // Add extra space at bottom to avoid overlap with navigation bar
-                    const SizedBox(height: 20),
                   ],
                 ),
               ),
             ),
           ),
-        ));
+        )
+    );
   }
 }
